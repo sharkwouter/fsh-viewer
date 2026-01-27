@@ -1,0 +1,6 @@
+[submodule "vendor/SDL"]
+	path = vendor/SDL
+	url = https://github.com/libsdl-org/SDL.git
+[submodule "vendor/LibOpenNFS"]
+	path = vendor/LibOpenNFS
+	url = https://github.com/OpenNFS/LibOpenNFS.git
