@@ -82,7 +82,6 @@ int main(int argc, char ** argv) {
 
   LibOpenNFS::Shared::FshArchive fsh;
   fsh.Load(file_name);
-  fsh.ExtractAll("output");
   std::vector<SDL_Texture *> textures;
   for(size_t i = 0; i < fsh.TextureCount(); i++) {
     textures.push_back(nullptr);
