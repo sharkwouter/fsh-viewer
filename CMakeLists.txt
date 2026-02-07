@@ -21,4 +21,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE SDL3-static LibOpenNFS)
 
 if (NOT WIN32)
   install(TARGETS ${PROJECT_NAME} DESTINATION bin)
+  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/fsh-viewer.desktop DESTINATION /usr/share/applications)
+  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/fsh.xml DESTINATION /usr/share/mime/packages)
+  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/fsh.thumbnailer DESTINATION /usr/share/thumbnailers)
 endif()

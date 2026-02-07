@@ -43,10 +43,14 @@ static void SDLCALL callback(void* userdata, const char* const* filelist, int fi
     }
 }
 
-
-SDL_Texture * getSDLTexture(SDL_Renderer * renderer, LibOpenNFS::Shared::FshTexture fshTex) {
+SDL_Surface * getSDLSurface(LibOpenNFS::Shared::FshTexture fshTex) {
   std::vector<uint32_t> pixels = fshTex.ToARGB32();
   SDL_Surface * surface = SDL_CreateSurfaceFrom((int) fshTex.Width(), (int) fshTex.Height(), SDL_PIXELFORMAT_ARGB8888, pixels.data(), (int) fshTex.Width() * 4);
+  return surface;
+}
+
+SDL_Texture * getSDLTexture(SDL_Renderer * renderer, LibOpenNFS::Shared::FshTexture fshTex) {
+SDL_Surface * surface = getSDLSurface(fshTex);
   if (surface == nullptr)
     return nullptr;
 
@@ -56,9 +60,19 @@ SDL_Texture * getSDLTexture(SDL_Renderer * renderer, LibOpenNFS::Shared::FshText
   return texture;
 }
 
+
 int main(int argc, char ** argv) {
   size_t current_image = 0;
   std::string file_name = "";
+
+  if (argc == 3) {
+    LibOpenNFS::Shared::FshArchive fsh;
+    fsh.Load(std::string(argv[1]));
+    SDL_Surface * surface = getSDLSurface(fsh.GetTexture(0));
+    SDL_SavePNG(surface, argv[2]);
+    SDL_DestroySurface(surface);
+    return 0;
+  }
 
   SDL_Init(SDL_INIT_VIDEO);
 
@@ -68,7 +82,7 @@ int main(int argc, char ** argv) {
     return 2;
   }
 
-  if (argc == 2) {
+  if (argc > 1) {
     file_name = argv[1];
   } else {
     SDL_ShowOpenFileDialog(callback, (void *) &file_name, window, filters, 1, NULL, false);

@@ -1,0 +1,5 @@
+[Desktop Entry]
+Name=FSH Viewer
+GenericName=fsh-viewer
+Exec=fsh-viewer %F
+Type=Application
