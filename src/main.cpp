@@ -46,7 +46,6 @@ static void SDLCALL callback(void* userdata, const char* const* filelist, int fi
 
 SDL_Texture * getSDLTexture(SDL_Renderer * renderer, LibOpenNFS::Shared::FshTexture fshTex) {
   std::vector<uint32_t> pixels = fshTex.ToARGB32();
-  SDL_Log("Pixel format is %d", fshTex.Format());
   SDL_Surface * surface = SDL_CreateSurfaceFrom((int) fshTex.Width(), (int) fshTex.Height(), SDL_PIXELFORMAT_ARGB8888, pixels.data(), (int) fshTex.Width() * 4);
   if (surface == nullptr)
     return nullptr;
