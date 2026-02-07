@@ -13,44 +13,40 @@ static const SDL_DialogFileFilter filters[] = {
   { "FSH archive",  "fsh;FSH;qfs;QFS" }
 };
 
+typedef struct {
+  std::string file_name;
+  bool done;
+} OpenFileUserData;
+
 
 static void SDLCALL callback(void* userdata, const char* const* filelist, int filter) {
-  std::string * file_name = (std::string *) userdata;
+  OpenFileUserData * openFileUserData = (OpenFileUserData *) userdata;
     if (!filelist) {
-        SDL_Log("An error occured: %s", SDL_GetError());
+        openFileUserData->done = true;
+        openFileUserData->file_name = "";
         return;
     } else if (!*filelist) {
-        SDL_Log("The user did not select any file.");
-        SDL_Log("Most likely, the dialog was canceled.");
+        openFileUserData->done = true;
+        openFileUserData->file_name = "";
         return;
     }
 
     while (*filelist) {
         SDL_Log("Full path to selected file: '%s'", *filelist);
-        *file_name = *filelist;
+        openFileUserData->file_name = *filelist;
         filelist++;
     }
-
-    if (filter < 0) {
-        SDL_Log("The current platform does not support fetching "
-                "the selected filter, or the user did not select"
-                " any filter.");
-        return;
-    } else if (filter < SDL_arraysize(filters)) {
-        SDL_Log("The filter selected by the user is '%s' (%s).",
-                filters[filter].pattern, filters[filter].name);
-        return;
-    }
+    openFileUserData->done = true;
 }
 
-SDL_Surface * getSDLSurface(LibOpenNFS::Shared::FshTexture fshTex) {
+SDL_Surface * getSDLSurface(LibOpenNFS::Shared::FshTexture const &fshTex) {
   std::vector<uint32_t> pixels = fshTex.ToARGB32();
   SDL_Surface * surface = SDL_CreateSurfaceFrom((int) fshTex.Width(), (int) fshTex.Height(), SDL_PIXELFORMAT_ARGB8888, pixels.data(), (int) fshTex.Width() * 4);
   return surface;
 }
 
-SDL_Texture * getSDLTexture(SDL_Renderer * renderer, LibOpenNFS::Shared::FshTexture fshTex) {
-SDL_Surface * surface = getSDLSurface(fshTex);
+SDL_Texture * getSDLTexture(SDL_Renderer * renderer, LibOpenNFS::Shared::FshTexture const &fshTex) {
+  SDL_Surface * surface = getSDLSurface(fshTex);
   if (surface == nullptr)
     return nullptr;
 
@@ -85,12 +81,23 @@ int main(int argc, char ** argv) {
   if (argc > 1) {
     file_name = argv[1];
   } else {
-    SDL_ShowOpenFileDialog(callback, (void *) &file_name, window, filters, 1, NULL, false);
+    OpenFileUserData openFileUserData;
+    openFileUserData.done = false;
+    openFileUserData.file_name = "";
+    SDL_ShowOpenFileDialog(callback, (void *) &openFileUserData, window, filters, 1, NULL, false);
+    while (!openFileUserData.done) {
+      SDL_PumpEvents();
+    }
+    if (openFileUserData.file_name.empty()) {
+      SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error", "No file was selected", window);
+      SDL_DestroyRenderer(renderer);
+      SDL_DestroyWindow(window);
+      SDL_Quit();
+      return 3;
+    }
+    file_name = openFileUserData.file_name;
   }
 
-  while (file_name.empty()) {
-    SDL_PumpEvents();
-  }
   SDL_Log("Selected %s", file_name.c_str());
 
   LibOpenNFS::Shared::FshArchive fsh;
