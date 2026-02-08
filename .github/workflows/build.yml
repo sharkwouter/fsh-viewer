@@ -1,0 +1,103 @@
+name: Build
+
+on:
+  push:
+
+jobs:
+  Ubuntu:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake libgl-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libwayland-dev libxkbcommon-dev
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Build
+        run: |
+          mkdir fsh-viewer && cd fsh-viewer
+          cmake -DCMAKE_BUILD_TYPE=Release ..
+          cmake --build .
+          strip --strip-unneeded fsh-viewer
+          cp -r ../README.md ./
+      - name: Publish artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: fsh-viewer-ubuntu
+          path: |
+            fsh-viewer/fsh-viewer
+
+  MacOS:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build
+        run: |
+          mkdir fsh-viewer && cd fsh-viewer
+          cmake -DCMAKE_BUILD_TYPE=Release ..
+          cmake --build .
+          strip --strip-unneeded fsh-viewer
+          cp -r ../README.md ./
+      - name: Publish artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: fsh-viewer-macos
+          path: |
+            fsh-viewer/fsh-viewer
+
+  Windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - name: Install dependencies
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          install: >-
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-binutils
+            mingw-w64-x86_64-make
+            mingw-w64-x86_64-cmake
+          update: true
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build
+        run: |
+          mkdir fsh-viewer && cd fsh-viewer
+          cmake -DCMAKE_BUILD_TYPE=Release ..
+          cmake --build .
+          strip --strip-unneeded fsh-viewer.exe
+          cp -r ../README.md ./
+      - name: Publish artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: fsh-viewer-windows
+          path: |
+            fsh-viewer/fsh-viewer.exe
+
+  Release:
+    needs: [Ubuntu, MacOS, Windows]
+    if: ${{ github.ref_type == 'tag' }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        build: [ubuntu, macos, windows]
+    steps:
+    - uses: actions/download-artifact@v4
+    - name: Zip artifacts
+      run: |
+        zip -r fsh-viewer-${{matrix.build}}.zip fsh-viewer-${{matrix.build}}
+    - name: Release
+      uses: softprops/action-gh-release@v2
+      with:
+        files: fsh-viewer-${{matrix.build}}.zip
+        prerelease: true
+        name: fsh-viewer ${{ github.ref_name }}
+        tag_name: ${{ github.ref_name }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
