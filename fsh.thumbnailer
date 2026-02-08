@@ -2,5 +2,5 @@
 Type=X-Thumbnailer
 Name=Need for Speed FSH file thumbnailer
 TryExec=fsh-viewer
-Exec=fsh-viewer %i %o
+Exec=fsh-viewer %i %o %s
 MimeType=application/vnd.fsh
