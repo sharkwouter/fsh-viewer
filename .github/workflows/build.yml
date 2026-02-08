@@ -34,6 +34,7 @@ jobs:
           name: fsh-viewer-ubuntu
           path: |
             fsh-viewer/fsh-viewer
+            fsh-viewer/README.md
 
   MacOS:
     runs-on: macos-latest
@@ -54,6 +55,7 @@ jobs:
           name: fsh-viewer-macos
           path: |
             fsh-viewer/fsh-viewer
+            fsh-viewer/README.md
 
   Windows:
     runs-on: windows-latest
@@ -88,6 +90,7 @@ jobs:
           name: fsh-viewer-windows
           path: |
             fsh-viewer/fsh-viewer.exe
+            fsh-viewer/README.md
 
   Release:
     needs: [Ubuntu, MacOS, Windows]
