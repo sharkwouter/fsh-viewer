@@ -140,8 +140,6 @@ int main(int argc, char ** argv) {
     // Clear the screen
     SDL_RenderClear(renderer);
 
-    // Draw a red square
-    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     // Load texture
     if (textures[current_image] == nullptr)
       textures[current_image] = getSDLTexture(renderer, fsh.GetTexture(current_image));
@@ -150,9 +148,8 @@ int main(int argc, char ** argv) {
       SDL_RenderTexture(renderer, textures[current_image], NULL, NULL);
     }
 
-
     // Draw everything on a white background
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderPresent(renderer);
   }
   for (SDL_Texture * texture : textures)
