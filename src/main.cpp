@@ -39,14 +39,9 @@ static void SDLCALL callback(void* userdata, const char* const* filelist, int fi
     openFileUserData->done = true;
 }
 
-SDL_Surface * getSDLSurface(LibOpenNFS::Shared::FshTexture const &fshTex) {
-  std::vector<uint32_t> pixels = fshTex.ToARGB32();
-  SDL_Surface * surface = SDL_CreateSurfaceFrom((int) fshTex.Width(), (int) fshTex.Height(), SDL_PIXELFORMAT_ARGB8888, reinterpret_cast<void *>(pixels.data()), (int) fshTex.Width() * 4);
-  return surface;
-}
-
 SDL_Texture * getSDLTexture(SDL_Renderer * renderer, LibOpenNFS::Shared::FshTexture const &fshTex) {
-  SDL_Surface * surface = getSDLSurface(fshTex);
+  std::vector<uint32_t> pixels = fshTex.ToARGB32();
+  SDL_Surface * surface = SDL_CreateSurfaceFrom((int) fshTex.Width(), (int) fshTex.Height(), SDL_PIXELFORMAT_ARGB8888, pixels.data(), (int) fshTex.Width() * 4);
   if (surface == nullptr)
     return nullptr;
 
@@ -64,7 +59,9 @@ int main(int argc, char ** argv) {
   if (argc == 4) {
     LibOpenNFS::Shared::FshArchive fsh;
     fsh.Load(std::string(argv[1]));
-    SDL_Surface * surface = getSDLSurface(fsh.GetTexture(0));
+    LibOpenNFS::Shared::FshTexture texture = fsh.GetTexture(0);
+    std::vector<uint32_t> pixels = texture.ToARGB32();
+    SDL_Surface * surface = SDL_CreateSurfaceFrom((int) texture.Width(), (int) texture.Height(), SDL_PIXELFORMAT_ARGB8888, pixels.data(), (int) texture.Width() * 4);
     int size = std::atoi(argv[3]);
     SDL_Surface * surface_scaled = SDL_ScaleSurface(surface, size, size, SDL_SCALEMODE_LINEAR);
     SDL_DestroySurface(surface);
